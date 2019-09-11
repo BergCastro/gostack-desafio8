@@ -14,12 +14,15 @@ Aplicação em Raect Native que consome a API do GitHub. Faz parte do desafio 7 
 
 ```
 cd gostack-desafio7
+yarn global add json-server
 yarn
 ```
 
 ## Running
 
 ```
+json-server server.json -p 3333
+adb reverse tcp:3333 tcp:3333
 react-native start
 react-native run-android
 ```
