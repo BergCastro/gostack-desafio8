@@ -1,10 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { bindActionCreators } from 'redux';
 
-import * as CartActions from '../../store/modules/cart/actions';
+import {
+  removeFromCart,
+  updateAmountRequest,
+} from '../../store/modules/cart/actions';
 
 import { formatPrice } from '../../util/format';
 
@@ -30,19 +31,30 @@ import {
 } from './styles';
 import Header from '../../components/Header';
 
-function Cart({
-  cart,
-  total,
-  removeFromCart,
-  updateAmountRequest,
-  navigation,
-}) {
+export default function Cart({ navigation }) {
+  const cart = useSelector(state =>
+    state.cart.map(product => ({
+      ...product,
+      subtotal: formatPrice(product.price * product.amount),
+    }))
+  );
+
+  const total = useSelector(state =>
+    formatPrice(
+      state.cart.reduce((sumTotal, product) => {
+        return sumTotal + product.price * product.amount;
+      }, 0)
+    )
+  );
+
+  const dispacth = useDispatch();
+
   function increment(product) {
-    updateAmountRequest(product.id, product.amount + 1);
+    dispacth(updateAmountRequest(product.id, product.amount + 1));
   }
 
   function decrement(product) {
-    updateAmountRequest(product.id, product.amount - 1);
+    dispacth(updateAmountRequest(product.id, product.amount - 1));
   }
 
   return (
@@ -89,30 +101,3 @@ function Cart({
     </Container>
   );
 }
-
-Cart.propTypes = {
-  cart: PropTypes.shape([]).isRequired,
-  total: PropTypes.number.isRequired,
-  removeFromCart: PropTypes.func.isRequired,
-  updateAmountRequest: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = state => ({
-  cart: state.cart.map(product => ({
-    ...product,
-    subtotal: formatPrice(product.price * product.amount),
-  })),
-  total: formatPrice(
-    state.cart.reduce((total, product) => {
-      return total + product.price * product.amount;
-    }, 0)
-  ),
-});
-
-const mapDispatchToProps = dispatch =>
-  bindActionCreators(CartActions, dispatch);
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Cart);
